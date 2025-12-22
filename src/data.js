@@ -16,9 +16,9 @@ let projects = [{
             {
                 // checkBox
                 id: "",
-                type: "checkbox",
-                title: "checkboxeleent",
-                state: "checked",
+                type: "checkBox",
+                title: "checkBoxelement",
+                state: "unchecked",
                 labels: {
                     priority: ""/* low, high, medium */,
                     dueDate: ""/* DD,MM,YY */,
@@ -48,8 +48,8 @@ let projects = [{
             {
                 // checkBox
                 id: "",
-                type: "checkbox",
-                title: "checkboxeleent",
+                type: "checkBox",
+                title: "checkBoxeleent",
                 state: "checked",
                 labels: {
                     priority: ""/* low, high, medium */,
@@ -84,7 +84,7 @@ let projects = [{
             {
                 // checkBox
                 id: "",
-                type: "checkbox",
+                type: "checkBox",
                 title: "",
                 state: "checked",
                 labels: {

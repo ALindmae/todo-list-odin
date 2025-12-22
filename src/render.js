@@ -29,6 +29,51 @@ const projectIcon = {
     textContent: "rocket_launch",
 }
 
+const progressIcon = {
+    none : `
+        <svg class="progressIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" id="Percentage-0--Streamline-Tabler" height="24" width="24">
+            <desc>
+                Percentage 0 Streamline Icon: https://streamlinehq.com
+            </desc>
+            <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0 -18 0" stroke-width="2"></path>
+        </svg>`,
+
+    quarter : `
+    <svg class="progressIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" id="Percentage-25--Streamline-Tabler" height="24" width="24">
+        <desc>
+            Percentage 25 Streamline Icon: https://streamlinehq.com
+        </desc>
+        <path d="M21 12a9 9 0 0 0 -9 -9m0 0v9h9" fill="#000000" stroke="none" stroke-width="2"></path>
+        <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0 -18 0" stroke-width="2"></path>
+    </svg>`,
+
+    half : `
+    <svg class="progressIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" id="Percentage-50--Streamline-Tabler" height="24" width="24">
+        <desc>
+            Percentage 50 Streamline Icon: https://streamlinehq.com
+        </desc>
+        <path d="M12 21a9 9 0 0 0 0 -18m0 0v18" fill="#000000" stroke="none" stroke-width="2"></path>
+        <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0 -18 0" stroke-width="2"></path>
+    </svg>`,
+
+    threeQuarters : `
+    <svg class="progressIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" id="Percentage-75--Streamline-Tabler" height="24" width="24">
+        <desc>
+            Percentage 75 Streamline Icon: https://streamlinehq.com
+        </desc>
+        <path d="M3 12a9 9 0 1 0 9 -9m0 0v9H3" fill="#000000" stroke="none" stroke-width="2"></path>
+        <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0 -18 0" stroke-width="2"></path>
+    </svg>`,
+
+    complete : `
+    <svg class="progressIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" id="Percentage-100--Streamline-Tabler" height="24" width="24">
+        <desc>
+            Percentage 100 Streamline Icon: https://streamlinehq.com
+        </desc>
+        <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0 -18 0" fill="#000000" stroke-width="2"></path>
+    </svg>`,
+}
+
 export function renderAllProjects(db) {
     const body = document.querySelector('body');
     body.textContent = "";
@@ -54,22 +99,22 @@ export function renderAllProjects(db) {
 function createProjectElement(project) {
     const projectElement = document.createElement('div');
     projectElement.setAttribute('data-id', project.id);
-    projectElement.classList.add('block', 'project-block');
+    projectElement.classList.add('block', 'project');
 
     const icon = document.createElement(projectIcon.tagName);
     icon.classList.add(projectIcon.class);
-    icon.classList.add('project-icon');
+    icon.classList.add('project__icon');
     icon.textContent = projectIcon.textContent;
 
     const title = document.createElement('h2');
-    title.classList.add('project-title');
+    title.classList.add('project__title');
     title.textContent = project.title;
 
     projectElement.append(icon, title);
 
     if (project.description) {
         const description = document.createElement('p');
-        description.classList.add('project-description');
+        description.classList.add('project__description');
         description.textContent = project.description;
         projectElement.append(description);
     }
@@ -80,16 +125,58 @@ function createProjectElement(project) {
 function createTaskElement(task) {
     const taskElement = document.createElement('div');
     taskElement.setAttribute('data-id', task.id);
-    taskElement.classList.add('block', 'task-block');
+    taskElement.classList.add('block', 'task');
+
+    const key = calculateProgress(task);
+    const icon = progressIcon[`${key}`];
 
     const title = document.createElement('p');
-    title.classList.add('task-title');
+    title.classList.add('task__title');
     title.textContent = task.title;
 
+    taskElement.insertAdjacentHTML('beforeend', icon);
     taskElement.append(title);
     
     return taskElement;
 }
+
+function countCheckboxes(blocks) {
+    let checked = 0;
+    let total = 0;
+
+    blocks.forEach(block => {
+        if (block.type === 'checkBox') {
+            total++;
+            if (block.state === 'checked') {
+                checked++;
+            }
+        } 
+        else if (block.type === 'task' && Array.isArray(block.blocks)) {
+            const result = countCheckboxes(block.blocks);
+            checked += result.checked;
+            total += result.total;
+        }
+    });
+
+    return { checked, total };
+}
+
+
+function calculateProgress(task) {
+    const { checked, total } = countCheckboxes(task.blocks);
+
+    if (total === 0) return 'none';
+
+    const percentage = (checked / total) * 100;
+
+    if (percentage === 100) return 'complete';
+    if (percentage > 50) return 'threeQuarters';
+    if (percentage > 25) return 'half';
+    if (percentage > 0) return 'quarter';
+
+    return 'none';
+}
+
 
 
 
