@@ -79,7 +79,13 @@ h1, h2, h3, h4, h5, h6 {
 
 }
 
-.progressIcon {
-  height: 10px;
-  width: 10px;
+
+.hover-menu__icon {
+  display: none;
+}
+
+
+.hover-menu__icon.active {
+  display: block;
+
 }

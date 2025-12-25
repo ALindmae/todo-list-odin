@@ -29,6 +29,12 @@ const projectIcon = {
     textContent: "rocket_launch",
 }
 
+const blockHoverIcons = {
+    tagName: "span",
+    class: "material-symbols-outlined",
+    textContent: "more_vert",  
+}
+
 const progressIcon = {
     none : `
         <svg class="progressIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" id="Percentage-0--Streamline-Tabler" height="24" width="24">
@@ -93,13 +99,29 @@ export function renderAllProjects(db) {
         
         body.append(projectElement);
     });
+    enableHoverMenu();
 
+}
+
+function createHoverIcon(icon) {
+    const iconElement = document.createElement(icon.tagName);
+    iconElement.classList.add(icon.class);
+    iconElement.classList.add('hover-menu__icon');
+    iconElement.textContent = icon.textContent;
+    return iconElement;
+}
+
+function toggleHoverIcon(selector) {
+    const icon = selector.querySelector('.hover-menu__icon');
+    icon.classList.add('active');
 }
 
 function createProjectElement(project) {
     const projectElement = document.createElement('div');
     projectElement.setAttribute('data-id', project.id);
     projectElement.classList.add('block', 'project');
+
+    const hoverIcon = createHoverIcon(blockHoverIcons);
 
     const icon = document.createElement(projectIcon.tagName);
     icon.classList.add(projectIcon.class);
@@ -110,7 +132,7 @@ function createProjectElement(project) {
     title.classList.add('project__title');
     title.textContent = project.title;
 
-    projectElement.append(icon, title);
+    projectElement.append(hoverIcon, icon, title);
 
     if (project.description) {
         const description = document.createElement('p');
@@ -127,6 +149,8 @@ function createTaskElement(task) {
     taskElement.setAttribute('data-id', task.id);
     taskElement.classList.add('block', 'task');
 
+    const hoverIcon = createHoverIcon(blockHoverIcons);
+
     const key = calculateProgress(task);
     const icon = progressIcon[`${key}`];
 
@@ -134,6 +158,7 @@ function createTaskElement(task) {
     title.classList.add('task__title');
     title.textContent = task.title;
 
+    taskElement.append(hoverIcon);
     taskElement.insertAdjacentHTML('beforeend', icon);
     taskElement.append(title);
     
@@ -161,7 +186,6 @@ function countCheckboxes(blocks) {
     return { checked, total };
 }
 
-
 function calculateProgress(task) {
     const { checked, total } = countCheckboxes(task.blocks);
 
@@ -176,6 +200,28 @@ function calculateProgress(task) {
 
     return 'none';
 }
+
+function addGlobalEventListener(type, selector, callback) {
+    document.body.addEventListener(type, (e) => {
+        const target = e.target.closest(selector);
+        if (!target) return;
+
+        callback(e, target);
+    })
+};
+
+function enableHoverMenu () {
+    addGlobalEventListener('mouseover', '.block', (e, block) => {
+    const icon = block.querySelector('.hover-menu__icon');
+    console.log(icon);
+    icon.classList.toggle('active', 1 === 1);
+    })
+
+    addGlobalEventListener('mouseout', '.block', (e, block) => {
+    const icon = block.querySelector('.hover-menu__icon');
+    icon.classList.toggle('active');
+    })
+};
 
 
 
