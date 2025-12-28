@@ -15,7 +15,7 @@ let projects = [{
         blocks: [
             {
                 // checkBox
-                id: "",
+                id: crypto.randomUUID(),
                 type: "checkBox",
                 title: "checkBoxelement",
                 state: "unchecked",
@@ -26,14 +26,20 @@ let projects = [{
                 description: "text"
             },
             {
-                id: "",
+                id: crypto.randomUUID(),
                 type: "lineBreak",
             },
             {
-                id: "",
+                id: crypto.randomUUID(),
                 type: "heading",
                 title: "Myfirstheading",
             },
+            {
+                id: crypto.randomUUID(),
+                type: "task",
+                title: "Myfirstheading",
+            },
+            
             ]
     },
 {
