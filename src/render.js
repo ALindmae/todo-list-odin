@@ -284,13 +284,43 @@ function calculateProgress(task) {
 export function enableClickHandlers () {
     document.addEventListener('click', (e) => {
         onAddItemsButtonClick(e);
+        onAddItemsMenuClick(e);
     }) 
 }
-
 
 export function enableHoverHandlers () {
     document.addEventListener('mouseover', handleHoverIn)
     document.addEventListener('mouseout', handleHoverOut)
+}
+
+
+/* FEATURE REGISTRATION */
+export function enableBlockSave () {
+    let saveReady = true;
+    document.addEventListener('pointerdown', verifyBlockSave);
+    document.addEventListener('focusout', handleBlockSave);
+
+    function verifyBlockSave(e) {
+    const blockPointer = e.target.closest('.block');
+    if (blockPointer) {
+        saveReady = false;
+    }
+    }
+
+    function handleBlockSave(e) {
+    const focusOutBlock = e.target.closest('.block');
+    let focusOnBlock;
+    if (e.relatedTarget) focusOnBlock = e.relatedTarget.closest('.block');
+    if (focusOutBlock) {
+        if (!focusOnBlock) {
+            if (saveReady) {
+                // handle save
+
+            }
+        }
+    }
+    saveReady = true;
+    }
 }
 
 
@@ -304,7 +334,7 @@ function handleHoverOut(e) {
     onBlockHoverMenuHoverOut(e);
 }
 
-function onBlockHoverMenuHover (e) {
+function onBlockHoverMenuHover(e) {
     const block = e.target.closest('.block');
     if (!block) return;
 
@@ -320,7 +350,7 @@ function onBlockHoverMenuHoverOut(e) {
     icon.classList.toggle('active');
 }
 
-function onAddItemsButtonClick (e) {
+function onAddItemsButtonClick(e) {
     const button = e.target.closest('[data-toggle]');
     const wrapper = e.target.closest('.add-items');
 
@@ -335,6 +365,46 @@ function onAddItemsButtonClick (e) {
     menu.classList.toggle('active');
 }
 
+function onAddItemsMenuClick(e) {
+    const item = e.target.closest('.add-items__menu-item');
+
+    if (!item) {
+        if (e.target.closest(('.add-items__menu.active'))) {
+            closeActive(".add-items__menu");
+        }
+        return;
+    }
+
+    const itemType = item.dataset.itemType;
+
+    switch (itemType) {
+        case "project":
+            renderMainPanelProjectForm();
+    }
+
+    closeActive(".add-items__menu");
+}
+
+function renderMainPanelProjectForm() {
+    const body = document.querySelector('body');
+    body.appendChild(createMainPanelProjectFormElement());
+}
+
+function createMainPanelProjectFormElement() {
+    const projectForm = document.createElement('div');
+    projectForm.classList.add('main-panel-form', 'project-form');
+
+    // Add projecticon
+
+    const titleInput = document.createElement('input');
+    titleInput.type = 'text';
+    titleInput.dataset.input = "title";
+    titleInput.classList.add('main-panel-form__input', 'project-title');
+
+    projectForm.append(titleInput);
+
+    return projectForm;
+}
 
 /* UI BEHAVIOR HELPERS */
 
