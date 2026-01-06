@@ -117,21 +117,23 @@ localStorage.setItem("projects", JSON.stringify(projects));
 
 // Default Project class
 class Project {
-  constructor({ title }) {
+  constructor({title, id, type}) {
     this.title = title;
+    this.id = id;
+    this.type = type;
   }
-  id = crypto.randomUUID();
+/*   id = crypto.randomUUID(); */
   tasks = [];
 }
 
 // Default block class
 class Block {
-    constructor (type, title) {
+    constructor ({type, title, id}) {
         this.type = type,
         this.title = title;
+        this.id = id;
     }
 
-    id = crypto.randomUUID();
 
     setType(BlockType, options) {
         this.properties = new BlockType(options);
@@ -140,7 +142,7 @@ class Block {
 
 // Specific block type classes
 class CheckBox {
-    constructor (title) {
+    constructor ({title}) {
         this.title = title || null;
     }
     state = "unchecked";
@@ -152,7 +154,7 @@ class CheckBox {
 }
 
 class Task {
-    constructor (title) {
+    constructor ({title}) {
         this.title = title || null;
     }
     id = crypto.randomUUID();
@@ -165,13 +167,19 @@ class Task {
 }
 
 // Create new block based on what block user chose in the UI
-function createItem(type) {
+export function createItem({type, title, id, state, priority}) {
     switch (type) {
+
+    case "project" :
+    return new Project({title, id, type});
+    break;
+
     case "checkBox" :
     return newBlock.setType(CheckBox, {
         title,
         state,
         priority,
+        id,
     });
     break;
 
@@ -179,12 +187,14 @@ function createItem(type) {
     return newBlock.setType(Task, {
         title,
         priority,
+        id,
     });
     break;
 
     case "textBlock" :
     return newBlock.setType(TextBlock, {
         title,
+        id,
     });
     break;
 
@@ -193,6 +203,7 @@ function createItem(type) {
         title,
         state,
         priority,
+        id,
     });
     break;
     };
@@ -204,14 +215,14 @@ export function saveItem({ type, data, projectId, taskId}) {
 
     if (projectsDB) {    
         switch (type) {
-            case "Project" :
+            case "project" :
                 insertProject({
                     projectsDB,
                     data,
                 });
                 break;
 
-            case "Block" :
+            case "block" :
                 insertBlock({
                     projectsDB,
                     data,
@@ -220,7 +231,7 @@ export function saveItem({ type, data, projectId, taskId}) {
                 });
                 break;
 
-            case "Task" :
+            case "task" :
                 insertTask({
                     projectsDB,
                     data,
