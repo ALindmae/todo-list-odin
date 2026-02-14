@@ -1,5 +1,9 @@
 /* UI RESOURCES & CONFIGURATION */
 
+export const UI_STATE = {
+    scope: "",
+}
+
 const projectIcon = {
     tagName: "span",
     class: "material-symbols-outlined",
@@ -62,31 +66,31 @@ const addItemMenuItems = [
         itemType: "checkBox",
         text: "Add CheckBox",
         icon: "",
-        scope: ['Task'],
+        scope: ['task'],
     },
     {
         itemType: "text",
         text: "Add Text",
         icon: "",
-        scope: ['Task'],
+        scope: ['task'],
     },
     {
         itemType: "heading",
         text: "Add Heading",
         icon: "",
-        scope: ['Task'],
+        scope: ['task'],
     },
     {
         itemType: "task",
         text: "Add Task",
         icon: "",
-        scope: ['All Projects', 'My Projects', 'Project', 'Task'],
+        scope: ['all-projects', 'my-projects', 'project', 'task'],
     },
     {
         itemType: "project",
         text: "Add Project",
         icon: projectIcon,
-        scope: ['All Projects', 'My Projects', 'Project', 'Task'],
+        scope: ['all-projects', 'my-projects', 'project', 'task'],
     }
 ];
 
@@ -100,15 +104,19 @@ const EDIT_MENU_ITEMS = [
 /* RENDER ENTRY POINTS */
 
 export function renderAllProjects(db) {
-    let scope = "All Projects";
 
-    const body = document.querySelector('body');
-    body.textContent = "";
+    UI_STATE.scope = "all-projects";
+
+    const app = document.querySelector('#app');
+    app.textContent = "";
+
+    const content = document.createElement('div');
+    content.classList.add('main-content');
 
     const title = document.createElement('h1');
     title.textContent = "All projects";
 
-    body.appendChild(title);
+    app.appendChild(title);
     
     db.forEach(project => {
         const projectElement = createProjectElement(project);
@@ -118,10 +126,10 @@ export function renderAllProjects(db) {
         });
 
         
-        body.append(projectElement);
+        app.append(projectElement);
     });
 
-    renderAddItemsButton(scope);
+    renderAddItemsButton();
 }
 
 
@@ -184,8 +192,8 @@ function createTaskElement(task) {
     return taskElement;
 }
 
-function renderAddItemsButton(scope) {
-    const body = document.querySelector('body');
+function renderAddItemsButton() {
+    const app = document.querySelector('#app');
 
     const wrapper = document.createElement('div');
     wrapper.classList.add('add-items');
@@ -195,20 +203,20 @@ function renderAddItemsButton(scope) {
     button.classList.add('button', 'add-items__button');
     button.dataset.toggle = "add-items-menu";
 
-    const menu = createAddItemMenu(scope);
+    const menu = createAddItemMenu();
 
     wrapper.append(button, menu);
 
-    body.appendChild(wrapper);
+    app.appendChild(wrapper);
 }
 
-function createAddItemMenu(scope) {
+function createAddItemMenu() {
     const menu = document.createElement('div');
     menu.classList.add('add-items__menu');
     menu.dataset.menu = "add-items-menu";
 
     addItemMenuItems.forEach( item => {
-        if (item.scope.includes(scope))
+        if (item.scope.includes(UI_STATE.scope))
         menu.append(createAddItemMenuItemElement(item));
     })
 
@@ -278,19 +286,19 @@ function calculateProgress(task) {
 }
 
 export function renderMainPanelItemForm({id, type}) {
-    const body = document.querySelector('body');
+    const app = document.querySelector('#app');
 
     switch (type) {
         case "project" :
-            body.appendChild(createMainPanelProjectFormElement({id, type}));
+            app.appendChild(createMainPanelProjectFormElement({id, type}));
             break;
         
         case "block" :
-            body.appendChild(createMainPanelBlockFormElement({id, type}));
+            app.appendChild(createMainPanelBlockFormElement({id, type}));
             break;
         
         case "task" :
-            body.appendChild(createMainPanelTaskFormElement({id, type}));
+            app.appendChild(createMainPanelTaskFormElement({id, type}));
             break;
         
         default:

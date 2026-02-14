@@ -2,6 +2,7 @@ import { loadDB } from './data.js';
 import { renderAllProjects } from './render.js';
 import { saveItem } from './data.js';
 import { renderMainPanelItemForm } from './render.js';
+import { UI_STATE } from './render.js';
 import { createItem } from './data.js';
 
 /* EVENT REGISTRATION */
