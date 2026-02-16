@@ -94,5 +94,16 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .add-items__menu.active {
-  display:block;
+  display: block;
+  position: relative;
+}
+
+.selection-panel--project-selection {
+  display: none;
+}
+
+.selection-panel--project-selection.active {
+  display: block;
+  position: absolute;
+  right: 0px;
 }

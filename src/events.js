@@ -5,11 +5,13 @@ import { renderMainPanelItemForm } from './render.js';
 import { UI_STATE } from './render.js';
 import { createItem } from './data.js';
 
+let itemType = null;
+
 /* EVENT REGISTRATION */
 
 export function enableClickHandlers () {
     document.addEventListener('click', (e) => {
-        onAddItemsButtonClick(e);
+        /* onAddItemsButtonClick(e); */
         onAddItemsMenuClick(e);
     }) 
 }
@@ -88,38 +90,47 @@ function onBlockHoverMenuHoverOut(e) {
     icon.classList.toggle('active');
 }
 
-function onAddItemsButtonClick(e) {
-    const button = e.target.closest('[data-toggle]');
-    const wrapper = e.target.closest('.add-items');
-
-    if (!button) {
-        if (!e.target.closest(('.add-items__menu.active'))) {
-            closeActive(".add-items__menu");
-        }
-        return;
-    }
-
-    const menu = wrapper.querySelector(`[data-menu]`);
-    menu.classList.toggle('active');
-}
-
 function onAddItemsMenuClick(e) {
+    const addItemsButton = e.target.closest('[data-toggle]');
+    const addItemsMenuWrapper = e.target.closest('.add-items');
     const item = e.target.closest('.add-items__menu-item');
+    const project = e.target.closest('.selection-panel--project-selection');
 
-    if (!item) {
-        if (e.target.closest(('.add-items__menu.active'))) {
-            closeActive(".add-items__menu");
+    if (addItemsButton && addItemsMenuWrapper) {
+        const addItemsMenu = addItemsMenuWrapper.querySelector(`[data-menu]`)
+        addItemsMenu.classList.toggle('active')
+        return;
+    }
+    
+    if (item) {
+        itemType = item.dataset.itemType;
+
+        if (UI_STATE.scope === 'all-projects' && itemType !== "project") {
+            const projectSelection = document.querySelector('.selection-panel--project-selection');
+            projectSelection.classList.toggle('active');
+            return;
         }
+
+        else {
+            const itemId = crypto.randomUUID();
+            renderMainPanelItemForm({id: itemId, type: itemType});
+            closeActive([".add-items__menu", ".selection-panel--project-selection"]);
+            itemType = null;
+            return;
+        }
+    }
+
+    if (project && itemType) 
+    {
+        const itemId = crypto.randomUUID();
+        renderMainPanelItemForm({id: itemId, type: itemType});
+        closeActive([".add-items__menu", ".selection-panel--project-selection"]);
+        itemType = null;
         return;
     }
 
-    const itemType = item.dataset.itemType;
-
-    const itemId = crypto.randomUUID();
-
-    renderMainPanelItemForm({id: itemId, type: itemType});
-
-    closeActive(".add-items__menu");
+    closeActive([".add-items__menu", ".selection-panel--project-selection"]);
+    itemType = null;
 }
 
 

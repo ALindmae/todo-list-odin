@@ -129,7 +129,7 @@ export function renderAllProjects(db) {
         app.append(projectElement);
     });
 
-    renderAddItemsButton();
+    renderAddItemsButton(db);
 }
 
 
@@ -192,7 +192,7 @@ function createTaskElement(task) {
     return taskElement;
 }
 
-function renderAddItemsButton() {
+function renderAddItemsButton(db) {
     const app = document.querySelector('#app');
 
     const wrapper = document.createElement('div');
@@ -203,14 +203,14 @@ function renderAddItemsButton() {
     button.classList.add('button', 'add-items__button');
     button.dataset.toggle = "add-items-menu";
 
-    const menu = createAddItemMenu();
+    const menu = createAddItemMenu(db);
 
     wrapper.append(button, menu);
 
     app.appendChild(wrapper);
 }
 
-function createAddItemMenu() {
+function createAddItemMenu(db) {
     const menu = document.createElement('div');
     menu.classList.add('add-items__menu');
     menu.dataset.menu = "add-items-menu";
@@ -220,10 +220,12 @@ function createAddItemMenu() {
         menu.append(createAddItemMenuItemElement(item));
     })
 
+    menu.append(createProjectSelectionMenu(db));
+
     return menu;
 }
 
-function createAddItemMenuItemElement (item) {
+function createAddItemMenuItemElement(item) {
     const itemElement = document.createElement('button');
     itemElement.classList.add('add-items__menu-item', 'menu-item');
     itemElement.dataset.itemType = item.itemType;
@@ -244,6 +246,44 @@ function createAddItemMenuItemElement (item) {
     itemElement.append(icon, text);
 
     return itemElement;
+}
+
+function createProjectSelectionMenu(db) {
+    const menu = document.createElement('div');
+    menu.classList.add('selection-panel', 'selection-panel--project-selection');
+
+    const title = document.createElement('p');
+    title.textContent = "Select project:";
+
+    const itemsWrapper = document.createElement('div');
+    itemsWrapper.classList.add('selection-panel__items-wrapper');
+
+    db.forEach(project => {
+        const projectTitle = project.title;
+        itemsWrapper.appendChild(createProjectSelectionMenuItem(projectTitle));
+    
+    });
+
+    menu.append(title, itemsWrapper);
+    return menu;
+}
+
+function createProjectSelectionMenuItem(projectTitle) {
+    const item = document.createElement('button');
+    item.classList.add('selection-panel__item');
+
+    const icon = document.createElement(projectIcon.tagName);
+    icon.classList.add(projectIcon.class);
+    icon.classList.add('selection-panel__item__icon');
+    icon.textContent = projectIcon.textContent;
+
+    const title = document.createElement('p');
+    title.classList.add('selection-panel__item__title');
+    title.textContent = projectTitle;
+
+    item.append(icon, title);
+
+    return item;
 }
 
 
