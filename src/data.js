@@ -134,9 +134,9 @@ class Block {
         this.id = id;
     }
 
-
-    setType(BlockType, options) {
-        this.properties = new BlockType(options);
+        setType(BlockType, options) {
+        Object.assign(this, new BlockType(options));
+        return this;
     }
 }
 
@@ -184,11 +184,14 @@ export function createItem({type, title, id, state, priority}) {
     break;
 
     case "task" :
-    return newBlock.setType(Task, {
+        const newBlock = new Block({title, id, type});
+    newBlock.setType(Task, {
         title,
         priority,
         id,
     });
+    console.log(newBlock);
+    return newBlock;
     break;
 
     case "textBlock" :
@@ -212,6 +215,7 @@ export function createItem({type, title, id, state, priority}) {
 // C - Save item into database
 export function saveItem({ type, data, projectId, taskId}) {
     const projectsDB = JSON.parse(localStorage.getItem('projects'));
+    console.log(projectsDB, data, projectId);
 
     if (projectsDB) {    
         switch (type) {
@@ -264,8 +268,8 @@ function insertBlock({ projectsDB, data, projectId, taskId }) {
     
 }
 
-function insertTask({ projectsDB, data, projectId}) {
-    if (projects) {
+function insertTask({ projectsDB, data, projectId }) {
+    if (projectsDB) {
         const targetProject = projectsDB.find(proj => proj.id == projectId)
         targetProject.tasks.push(data);
     }

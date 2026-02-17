@@ -7,7 +7,7 @@ import { enableHoverHandlers } from "./events.js";
 import { enableBlockSave  } from "./events.js";
 
 const db = loadDB();
-enableClickHandlers();
+enableClickHandlers(db);
 enableHoverHandlers();
 enableBlockSave();
 renderAllProjects(db);

@@ -260,7 +260,8 @@ function createProjectSelectionMenu(db) {
 
     db.forEach(project => {
         const projectTitle = project.title;
-        itemsWrapper.appendChild(createProjectSelectionMenuItem(projectTitle));
+        const projectId = project.id;
+        itemsWrapper.appendChild(createProjectSelectionMenuItem({projectTitle, projectId}));
     
     });
 
@@ -268,9 +269,10 @@ function createProjectSelectionMenu(db) {
     return menu;
 }
 
-function createProjectSelectionMenuItem(projectTitle) {
+function createProjectSelectionMenuItem({projectTitle, projectId}) {
     const item = document.createElement('button');
     item.classList.add('selection-panel__item');
+    item.setAttribute('data-project-id', projectId);
 
     const icon = document.createElement(projectIcon.tagName);
     icon.classList.add(projectIcon.class);
@@ -325,26 +327,42 @@ function calculateProgress(task) {
     return 'none';
 }
 
-export function renderMainPanelItemForm({id, type}) {
-    const app = document.querySelector('#app');
+// Render under specific project: query by id, appendchil.
 
+// pas projectID as argument
+// under case "task": if projectID passed, query the project node + append, else append to app
+
+/* getProjectNode(projectId) {
+    return document.querySelector()
+}  */
+
+export function renderMainPanelItemForm({ id, type, projectId }) {
+    const form = createMainPanelItemForm({ id, type, projectId });
+    if (!form) return;
+
+    const app = document.querySelector('#app')
+    if (projectId) {
+        const projectNode = app.querySelector(`[data-id="${projectId}"]`);
+        projectNode.appendChild(form);
+    } else {
+       app.appendChild(form);
+    }
+}
+
+function createMainPanelItemForm({id, type, projectId}) {
     switch (type) {
         case "project" :
-            app.appendChild(createMainPanelProjectFormElement({id, type}));
-            break;
+            return createMainPanelProjectFormElement({id, type});
         
         case "block" :
-            app.appendChild(createMainPanelBlockFormElement({id, type}));
-            break;
+            return createMainPanelBlockFormElement({id, type});
         
         case "task" :
-            app.appendChild(createMainPanelTaskFormElement({id, type}));
-            break;
+            return createMainPanelTaskFormElement({id, type, projectId});
         
         default:
             console.log(`Unknown type passed to the renderMainPanelItemForm(): ${type}`);
     }
-
 }
 
 function createMainPanelProjectFormElement({id, type}) {
@@ -387,11 +405,12 @@ function createMainPanelBlockFormElement({id, type}) {
     return blockForm;
 }
 
-function createMainPanelTaskFormElement({id, type}) {
+function createMainPanelTaskFormElement({id, type, projectId}) {
     const taskForm = document.createElement('div');
     taskForm.classList.add('main-panel-form', 'task-form');
     taskForm.dataset.id = id;
-    taskForm.dataset.type = type
+    taskForm.dataset.type = type;
+    taskForm.dataset.projectId = projectId;
 
     const icon = progressIcon.none;
 
