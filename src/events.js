@@ -26,43 +26,69 @@ export function enableHoverHandlers () {
 
 /* FEATURE REGISTRATION */
 export function enableBlockSave () {
-    let saveReady = true;
-    document.addEventListener('pointerdown', verifyBlockSave);
-    document.addEventListener('focusout', handleBlockSave);
+    /* let saveReady = true; */
+    let pointerInsideBlock = null;
 
-    function verifyBlockSave(e) {
-    const blockPointer = e.target.closest('.main-panel-form');
+    document.addEventListener('pointerdown', (e) => {
+        pointerInsideBlock = e.target.closest('.main-panel-form');
+    });
+    document.addEventListener('focusout', handleFocusOut);
+    /* document.addEventListener('keydown', handleKeyDown); */
+
+/*     function checkBlockPointer(e) {
+    return e.target.closest('.main-panel-form');
     if (blockPointer) {
         saveReady = false;
     }
     else saveReady = true;
+    } */
+
+/*     function handleKeyDown(e) {
+            if (e.target.closest('.main-panel-form') === document.activeElement.closest('.main-panel-form'));
+    console.log(e.target.closest('.main-panel-form'));
+    if (e.type === 'keydown') {
+        console.log(document.activeElement);
+        if (e.key === 'Enter' && !e.shiftKey) 
+        console.log(e.key);
     }
+        
+    } */
 
-    function handleBlockSave(e) {
-    const focusOutBlock = e.target.closest('.main-panel-form');
-    let focusOnBlock;
-    if (e.relatedTarget) focusOnBlock = e.relatedTarget.closest('.main-panel-form');
-    if (focusOutBlock) {
-        if (!focusOnBlock) {
-            if (saveReady) {
-                const itemInput = getFormData(focusOutBlock);
-                const item = createItem(itemInput);
-                const projectId = itemInput.projectId;
+    function handleFocusOut(e) {
+        const focusOutBlock = e.target.closest('.main-panel-form');
+        if (!focusOutBlock) return;
 
-                saveItem({type: item.type, data: item, projectId});
-                renderAllProjects(loadDB());
-            }
+        if (e.relatedTarget) {
+            let focusOnBlock;
+            focusOnBlock = e.relatedTarget.closest('.main-panel-form');
+            if (focusOnBlock === focusOutBlock) return;
         }
-    }
-    saveReady = true;
+  
+        if (pointerInsideBlock === focusOutBlock) return;
+
+        if (attemptSave(focusOutBlock)) {
+            renderAllProjects(loadDB());
+        }
+
+        pointerInsideBlock = null;
     }
 }
+
+function attemptSave(focusOutBlock) {
+    const itemInput = getFormData(focusOutBlock);
+    if (!itemInput.title) return null;
+
+    const projectId = itemInput.projectId;
+    const item = createItem(itemInput);
+
+    return saveItem({type: item.type, data: item, projectId});
+}
+
 
 function getFormData(form) {
     let title = form.querySelector('[data-input="title"]').value;
     let id = form.dataset.id;
     let projectId = form.dataset.projectId;
-
     let type = form.dataset.type;
 
     return { title, id, type, projectId }

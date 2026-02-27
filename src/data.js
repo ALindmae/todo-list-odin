@@ -113,7 +113,11 @@ let projects = [{
 },
 ];
 
-localStorage.setItem("projects", JSON.stringify(projects));
+saveToStorage(projects);
+
+function saveToStorage(projectsDB) {
+    localStorage.setItem("projects", JSON.stringify(projectsDB));
+};
 
 // Default Project class
 class Project {
@@ -122,7 +126,6 @@ class Project {
     this.id = id;
     this.type = type;
   }
-/*   id = crypto.randomUUID(); */
   tasks = [];
 }
 
@@ -134,7 +137,7 @@ class Block {
         this.id = id;
     }
 
-        setType(BlockType, options) {
+    setType(BlockType, options) {
         Object.assign(this, new BlockType(options));
         return this;
     }
@@ -142,146 +145,150 @@ class Block {
 
 // Specific block type classes
 class CheckBox {
-    constructor ({title}) {
-        this.title = title || null;
-    }
     state = "unchecked";
-    labels = [
-        { type: "priority", value: null },
-        { type: "dueDate", value: null }
-    ];
+    constructor ({priority, dueDate} = {}) {
+        this.labels = [
+            { type: "priority", value: priority || null},
+            { type: "dueDate", value: dueDate || null }
+        ];
+    };
     description = null;
 }
 
 class Task {
-    constructor ({title}) {
-        this.title = title || null;
-    }
-    id = crypto.randomUUID();
+    constructor ({priority, dueDate} = {}) {
+        this.labels = [
+            { type: "priority", value: priority || null},
+            { type: "dueDate", value: dueDate || null }
+        ];
+    };
+    description = null;
+    blocks = [];
+}
+
+/* class Task {
     labels = [
         { type: "priority", value: null },
         { type: "dueDate", value: null }
     ];
     description = null;
     blocks = [];
-}
+} */
 
 // Create new block based on what block user chose in the UI
-export function createItem({type, title, id, state, priority}) {
+export function createItem({type, title, id, state, priority, dueDate}) {
+
+    if (!type) {
+        throw new Error("Type is required to create item");
+    }
+
     switch (type) {
+        case "project" :
+            return new Project({title, id, type});
 
-    case "project" :
-    return new Project({title, id, type});
-    break;
+        case "checkBox" :
+        return new Block({title, id, type}).setType(CheckBox, {priority, dueDate});
 
-    case "checkBox" :
-    return newBlock.setType(CheckBox, {
-        title,
-        state,
-        priority,
-        id,
-    });
-    break;
+        case "task" :
+            return new Block({title, id, type}).setType(Task, {priority, dueDate});
 
-    case "task" :
-        const newBlock = new Block({title, id, type});
-    newBlock.setType(Task, {
-        title,
-        priority,
-        id,
-    });
-    console.log(newBlock);
-    return newBlock;
-    break;
+/*         const newBlock = new Block({title, id, type});
+        newBlock.setType(Task, {
+            priority,
+        });
+        return newBlock; */
 
-    case "textBlock" :
-    return newBlock.setType(TextBlock, {
-        title,
-        id,
-    });
-    break;
+
+        case "textBlock" :
+            return new Block({title, id, type});
 
         case "heading" :
-    return newBlock.setType(Heading, {
-        title,
-        state,
-        priority,
-        id,
-    });
-    break;
+            return new Block({title, id, type}).setType(Task, {priority, dueDate});
     };
 }
 
 // C - Save item into database
 export function saveItem({ type, data, projectId, taskId}) {
     const projectsDB = JSON.parse(localStorage.getItem('projects'));
-    console.log(projectsDB, data, projectId);
 
-    if (projectsDB) {    
-        switch (type) {
-            case "project" :
-                insertProject({
-                    projectsDB,
-                    data,
-                });
-                break;
-
-            case "block" :
-                insertBlock({
-                    projectsDB,
-                    data,
-                    projectId,
-                    taskId,
-                });
-                break;
-
-            case "task" :
-                insertTask({
-                    projectsDB,
-                    data,
-                    projectId,
-                });
-                break;
-            
-            default:
-                console.log(`Unknown type: ${type}`);
-        }
-    }
-    else {
-        return console.log("Not possible to retrieve projects from the database")
+    if (!projectsDB) {
+        console.log("Not possible to retrieve projects from the database");
+        return false;
     }
 
-    localStorage.setItem('projects', JSON.stringify(projectsDB));
+    let insertSuccess = false;
+
+    switch (type) {
+        case "project" :
+            insertSuccess = insertProject({ projectsDB, data });
+            break;
+
+        case "block" :
+            insertSuccess = insertBlock({
+                projectsDB,
+                data,
+                projectId,
+                taskId,
+            });
+            break;
+
+        case "task" :
+            insertSuccess = insertTask({
+                projectsDB,
+                data,
+                projectId,
+            });
+            break;
+        
+        default:
+            console.log(`Unknown type: ${type}`);
+            return false;
+    }
+
+    if (!insertSuccess) {
+    console.log("Insertion failed");
+    return false;
+    }
+
+    try {
+        saveToStorage(projectsDB);
+        console.log("Saved successfully");
+        return true;
+    }
+    catch (err) {
+        console.error("Save failed:", err);
+    }
 }
 
 // Database object insertion functions
 function insertBlock({ projectsDB, data, projectId, taskId }) {
-        if (projects) {
-        const targetProject = projectsDB.find(proj => proj.id == projectId)
+        if (!projectsDB) return false;
+
+        const targetProject = projectsDB.find(proj => proj.id == projectId);
+        if (!targetProject) return false;
+
         const targetTask = targetProject.tasks.find(task => task.id == taskId)
+        if (!targetTask) return false;
+
         targetTask.blocks.push(data);
-    }
-    else {
-        console.log("No projects retrieced from the database")
-        return;
-    }
-    
+        return true;
 }
 
 function insertTask({ projectsDB, data, projectId }) {
-    if (projectsDB) {
-        const targetProject = projectsDB.find(proj => proj.id == projectId)
-        targetProject.tasks.push(data);
-    }
-    else {
-        console.log("No projects retrieved from the database")
-        return;
-    }
+    if (!projectsDB) return false;
 
+    const targetProject = projectsDB.find(proj => proj.id == projectId);
+    if (!targetProject) return false;
+
+    targetProject.tasks.push(data);
+    return true;
 }
 
 function insertProject({ projectsDB, data }) {
-        projectsDB.push(data);
+    if (!projectsDB) return false;
+    
+    projectsDB.push(data);
+    return true;
 }
 
 export function loadDB() {
