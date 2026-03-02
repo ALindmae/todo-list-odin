@@ -344,8 +344,10 @@ export function renderMainPanelItemForm({ id, type, projectId }) {
     if (projectId) {
         const projectNode = app.querySelector(`[data-id="${projectId}"]`);
         projectNode.appendChild(form);
+        return form;
     } else {
        app.appendChild(form);
+       return form;
     }
 }
 

@@ -25,53 +25,63 @@ export function enableHoverHandlers () {
 
 
 /* FEATURE REGISTRATION */
-export function enableBlockSave () {
-    /* let saveReady = true; */
+export function enableBlockFormLifecycle () {
     let pointerInsideBlock = null;
+
+    let processedForms = new Set();
 
     document.addEventListener('pointerdown', (e) => {
         pointerInsideBlock = e.target.closest('.main-panel-form');
     });
+
     document.addEventListener('focusout', handleFocusOut);
-    /* document.addEventListener('keydown', handleKeyDown); */
 
-/*     function checkBlockPointer(e) {
-    return e.target.closest('.main-panel-form');
-    if (blockPointer) {
-        saveReady = false;
-    }
-    else saveReady = true;
-    } */
+    document.addEventListener('keydown', handleKeyDown);
 
-/*     function handleKeyDown(e) {
-            if (e.target.closest('.main-panel-form') === document.activeElement.closest('.main-panel-form'));
-    console.log(e.target.closest('.main-panel-form'));
-    if (e.type === 'keydown') {
-        console.log(document.activeElement);
-        if (e.key === 'Enter' && !e.shiftKey) 
-        console.log(e.key);
+    function handleKeyDown(e) {
+        const formElement = e.target.closest('.main-panel-form');
+
+        if (!formElement) return;
+
+        const key = e.key;
+
+        if (key !== 'Enter') return;
+
+        if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+
+        handleForm(formElement);
     }
-        
-    } */
 
     function handleFocusOut(e) {
         const focusOutBlock = e.target.closest('.main-panel-form');
         if (!focusOutBlock) return;
 
         if (e.relatedTarget) {
-            let focusOnBlock;
-            focusOnBlock = e.relatedTarget.closest('.main-panel-form');
+            let focusOnBlock = e.relatedTarget.closest('.main-panel-form');
             if (focusOnBlock === focusOutBlock) return;
         }
   
         if (pointerInsideBlock === focusOutBlock) return;
 
-        if (attemptSave(focusOutBlock)) {
-            renderAllProjects(loadDB());
-        }
+        handleForm(focusOutBlock);
 
         pointerInsideBlock = null;
     }
+
+        function handleForm(form) {
+            let id = form.dataset.id;
+
+            if (processedForms.has(id)) return;
+
+            processedForms.add(id);
+
+            if (attemptSave(form)) {
+                renderAllProjects(loadDB());;
+            }
+            else {
+                form.remove();
+            }
+    } 
 }
 
 function attemptSave(focusOutBlock) {
@@ -93,6 +103,8 @@ function getFormData(form) {
 
     return { title, id, type, projectId }
 }
+
+
 
 
 /* EVENT HANDLERS */
@@ -145,7 +157,8 @@ function onAddItemsMenuClick(e) {
 
         else {
             const itemId = crypto.randomUUID();
-            renderMainPanelItemForm({id: itemId, type: addItemState.itemType});
+            const form = renderMainPanelItemForm({id: itemId, type: addItemState.itemType});
+            form.querySelector('.main-panel-form__input').focus();
             closeActive([".add-items__menu", ".selection-panel--project-selection"]);
             addItemState.itemType = null;
             return;
@@ -160,7 +173,8 @@ function onAddItemsMenuClick(e) {
         }
         const projectId = project.dataset.projectId;
         const itemId = crypto.randomUUID();
-        renderMainPanelItemForm({id: itemId, type: addItemState.itemType, projectId});
+        const form = renderMainPanelItemForm({id: itemId, type: addItemState.itemType, projectId});
+        form.querySelector('.main-panel-form__input').focus();
         closeActive([".add-items__menu", ".selection-panel--project-selection"]);
         addItemState.itemType = null;
         return;
@@ -169,6 +183,9 @@ function onAddItemsMenuClick(e) {
     closeActive([".add-items__menu", ".selection-panel--project-selection"]);
     addItemState.itemType = null;
 }
+
+// status: removed, saved, active
+
 
 
 /* UI BEHAVIOR HELPERS */
